@@ -1,44 +1,160 @@
-<script>
-    document.getElementById('deleteForm').addEventListener('submit', function(event) {
-        event.preventDefault(); 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SD Mart - Account Deletion</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        h1 {
+            color: #28a745; /* App's primary color */
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        input[type="email"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box; 
+        }
+        .btn {
+            background-color: #dc3545; /* Red color for deletion */
+            color: #ffffff;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        .btn:disabled {
+            background-color: #a0a0a0;
+            cursor: not-allowed;
+        }
+        .btn:hover:not(:disabled) {
+            background-color: #c82333;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none; /* Initially hidden */
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block; /* Show on success */
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block; /* Show on error */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Account & Data Deletion</h1>
+        <p>
+            To request the permanent deletion of your account and all associated data from SD Mart, please enter the email address linked to your account below.
+        </p>
+        
+        <form id="deleteForm">
+            <div class="form-group">
+                <label for="email">Account Email Address:</label>
+                <input type="email" id="email" name="Email" placeholder="e.g., user@example.com" required>
+            </div>
+            <button type="submit" class="btn">Request Account Deletion</button>
+        </form>
 
-        const email = document.getElementById('email').value;
-        const responseDiv = document.getElementById('responseMessage');
-        const submitButton = this.querySelector('button');
+        <div id="responseMessage" class="message"></div>
+    </div>
 
-        // Function URL (Isko apne URL se replace karein)
-        const functionUrl = 'https://asia-south1-your-project-id.cloudfunctions.net/deleteUserAccount'; 
+    <script>
+        document.getElementById('deleteForm').addEventListener('submit', function(event) {
+            event.preventDefault(); 
 
-        submitButton.disabled = true;
-        submitButton.textContent = 'Processing...';
-        responseDiv.style.display = 'none';
+            const email = document.getElementById('email').value;
+            const responseDiv = document.getElementById('responseMessage');
+            const submitButton = this.querySelector('button');
 
-        // Backend function ko call karein
-        fetch(functionUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email: email }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                responseDiv.textContent = 'Your account deletion request has been successfully processed. Your data has been removed from our systems.';
-                responseDiv.className = 'message success';
-            } else {
-                responseDiv.textContent = `Error: ${data.message || 'An unexpected error occurred.'}`;
+            // Function URL (Isko apne URL se replace karein)
+            // **ZAROORI:** 'your-project-id' ko apne Firebase Project ID se badlein.
+            const functionUrl = 'https://asia-south1-your-project-id.cloudfunctions.net/deleteUserAccount'; 
+
+            submitButton.disabled = true;
+            submitButton.textContent = 'Processing...';
+            responseDiv.style.display = 'none';
+
+            // Backend function ko call karein
+            fetch(functionUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    responseDiv.textContent = 'Your account deletion request has been successfully processed. Your data has been removed from our systems.';
+                    responseDiv.className = 'message success';
+                } else {
+                    responseDiv.textContent = `Error: ${data.message || 'An unexpected error occurred.'}`;
+                    responseDiv.className = 'message error';
+                }
+                responseDiv.style.display = 'block'; // Message dikhayein
+            })
+            .catch(error => {
+                console.error('Fetch Error:', error);
+                responseDiv.textContent = 'A network error occurred. Please try again later.';
                 responseDiv.className = 'message error';
-            }
-        })
-        .catch(error => {
-            console.error('Fetch Error:', error);
-            responseDiv.textContent = 'A network error occurred. Please try again later.';
-            responseDiv.className = 'message error';
-        })
-        .finally(() => {
-            submitButton.disabled = false;
-            submitButton.textContent = 'Request Account Deletion';
+                responseDiv.style.display = 'block'; // Message dikhayein
+            })
+            .finally(() => {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Request Account Deletion';
+            });
         });
-    });
-</script>
+    </script>
+</body>
+</html>
